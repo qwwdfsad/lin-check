@@ -72,7 +72,19 @@ public class Utils {
      */
     public static Result executeActor(Object testInstance, Actor actor) {
         try {
-            Method m = testInstance.getClass().getMethod(actor.method.getName(), actor.method.getParameterTypes());
+
+            /*
+             * Do not lookup method if test instance was loaded by the same class loader.
+             * Lookup is required only for custom manageable strategies.
+             */
+            Class<?> instanceClass = testInstance.getClass();
+            Method m;
+            if (instanceClass.getClassLoader() != Utils.class.getClassLoader()) {
+                m = instanceClass.getMethod(actor.method.getName(), actor.method.getParameterTypes());
+            } else {
+                m = actor.method;
+            }
+
             Object res = m.invoke(testInstance, actor.arguments);
             if (actor.method.getReturnType() == void.class)
                 return Result.createVoidResult();
