@@ -28,6 +28,7 @@ import com.devexperts.dxlab.lincheck.execution.ExecutionScenario;
 import com.devexperts.dxlab.lincheck.strategy.Strategy;
 import com.devexperts.dxlab.lincheck.verifier.Verifier;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 
@@ -56,6 +57,16 @@ public class LinChecker {
             this.testConfigurations = CTestConfiguration.createFromTestClass(testClass);
         }
         this.reporter = new Reporter(logLevel);
+        checkEqualsAndHashcode(testClass);
+    }
+
+    private void checkEqualsAndHashcode(Class<?> testClass) {
+        try {
+            Method eq = testClass.getDeclaredMethod("equals", Object.class);
+            Method hc = testClass.getDeclaredMethod("hashCode");
+        } catch (Exception e) {
+            System.err.println("Equals and hashCode implementations are missing from " + testClass.getSimpleName() + ", test may be slow or inefficient");
+        }
     }
 
     /**
